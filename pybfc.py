@@ -5,8 +5,18 @@ import win32gui
 import win32con
 from time import sleep
 import platform
+import glob
+from os import path
+
+# Config
+SRC_DIR = "E:\\works\\py\\pybfc\\test\\"
+DST_DIR = "E:\\works\\py\\pybfc\\test\\"
+MAX_TASKS = 3
+##
 
 WIN_VERSION = platform.win32_ver()[0]
+
+FILE_EXTENTION = "h264"
 
 TARGET_MAIN_WND_TITLE = "H264 конвертировать AVI"
 TARGET_DLG_WND_TITLE = "Новые задачи преобразования"
@@ -16,10 +26,12 @@ TARGET_BTTN_CLASS = "Button"
 STD_DLG_OPEN_TITLE = "Открыть"
 if WIN_VERSION == '7':
     STD_DLG_SAVEAS_TITLE = "Сохранить как"
-else:
+else: # 10
     STD_DLG_SAVEAS_TITLE = "Сохранение"
 STD_DLG_OPEN_BTN_TITLE = "&Открыть"
 STD_DLG_SAVEAS_BTN_TITLE = "Со&хранить"
+
+LVM_GETITEMCOUNT = 4100
 
 _hSelectFile0 = 0
 _hSelectFile1 = 0
@@ -135,4 +147,26 @@ def add_task(SrcFileName, DestFileName):
     except Exception as e:
         raise Exception("new task dialog not closed for the time provided")
         
-add_task("test.h264", "test.avi")
+
+def get_tasks_count():
+    # get main window
+    hMainWnd = win32gui.FindWindow(None, TARGET_MAIN_WND_TITLE)
+    if hMainWnd == 0:
+        raise Exception("main window not found")
+    # get list
+    hList = win32gui.FindWindowEx(hMainWnd, 0, "SysListView32", None)
+    if hList == 0:
+        raise Exception("list window not found")
+    Count = win32gui.SendMessage(hList, LVM_GETITEMCOUNT, 0, 0);
+    return Count
+
+for SrcFilename in glob.glob(path.join(SRC_DIR ,"*." + FILE_EXTENTION)):
+    DstFileName = path.join(DST_DIR, path.basename(SrcFilename) + ".avi")
+    if path.exists(DstFileName):
+        print('file "{}" already exists'.format(DstFileName))
+        continue
+    print('add task "{}" -> "{}"'.format(SrcFilename, DstFileName))
+    add_task(SrcFilename, DstFileName)
+    while get_tasks_count() >= MAX_TASKS:
+        sleep(0.5)
+
