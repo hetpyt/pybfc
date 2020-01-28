@@ -4,6 +4,9 @@
 import win32gui
 import win32con
 from time import sleep
+import platform
+
+WIN_VERSION = platform.win32_ver()[0]
 
 TARGET_MAIN_WND_TITLE = "H264 конвертировать AVI"
 TARGET_DLG_WND_TITLE = "Новые задачи преобразования"
@@ -11,7 +14,10 @@ TARGET_NEWTASK_BTTN_TITLE = "Новая задача"
 TARGET_ADD_BTTN_TITLE = "добавлять"
 TARGET_BTTN_CLASS = "Button"
 STD_DLG_OPEN_TITLE = "Открыть"
-STD_DLG_SAVEAS_TITLE = "Сохранение" # win7 - "Сохранить как"
+if WIN_VERSION == '7':
+    STD_DLG_SAVEAS_TITLE = "Сохранить как"
+else:
+    STD_DLG_SAVEAS_TITLE = "Сохранение"
 STD_DLG_OPEN_BTN_TITLE = "&Открыть"
 STD_DLG_SAVEAS_BTN_TITLE = "Со&хранить"
 
@@ -64,7 +70,7 @@ def EnumWndProc(h, param):
     if sClassName == TARGET_BTTN_CLASS:
         sTitle = win32gui.GetWindowText(h)
         if sTitle == "..":
-            print("found control handle {} of '{}' with title '{}'".format(h, sClassName, sTitle))
+            #print("found control handle {} of '{}' with title '{}'".format(h, sClassName, sTitle))
             if _hSelectFile0 == 0:
                 _hSelectFile0 = h
             else:
