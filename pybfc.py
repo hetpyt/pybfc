@@ -9,14 +9,14 @@ import glob
 from os import path
 
 # Config
-SRC_DIR = "E:\\works\\py\\pybfc\\test\\"
-DST_DIR = "E:\\works\\py\\pybfc\\test\\"
+SRC_DIR = "G:\\RecordFile"
+DST_DIR = "F:\\RecordFile\\test"
 MAX_TASKS = 3
 ##
 
 WIN_VERSION = platform.win32_ver()[0]
 
-FILE_EXTENTION = "h264"
+FILE_EXTENTION = "264"
 
 TARGET_MAIN_WND_TITLE = "H264 конвертировать AVI"
 TARGET_DLG_WND_TITLE = "Новые задачи преобразования"
