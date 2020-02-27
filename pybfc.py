@@ -3,14 +3,17 @@
 
 import win32gui
 import win32con
+from win32api import GetLogicalDriveStrings, GetVolumeInformation
+from win32file import GetDriveType
 from time import sleep
 import platform
 import glob
-from os import path
+from os import path, mkdir
+from datetime import date
 
 # Config
-SRC_DIR = "G:\\RecordFile"
-DST_DIR = "F:\\RecordFile\\test"
+DVR_DIR = "RecordFile"
+DST_PATH= "F:\\RecordFile"
 MAX_TASKS = 3
 #
 
@@ -35,6 +38,11 @@ LVM_GETITEMCOUNT = 4100
 
 _hSelectFile0 = 0
 _hSelectFile1 = 0
+
+def get_drives_list(drive_types=(win32con.DRIVE_REMOVABLE,)):
+    drives_str = GetLogicalDriveStrings()
+    drives = [item for item in drives_str.split("\x00") if item]
+    return [item[:2] for item in drives if drive_types is None or GetDriveType(item) in drive_types]
 
 def push_button(h):
     win32gui.SetForegroundWindow(h);
@@ -161,14 +169,39 @@ def get_tasks_count():
     return Count
 
 if __name__ == "__main__":
-
-    for SrcFilename in glob.glob(path.join(SRC_DIR ,"*." + FILE_EXTENTION)):
-        DstFileName = path.join(DST_DIR, path.basename(SrcFilename) + ".avi")
-        if path.exists(DstFileName):
-            print('file "{}" already exists'.format(DstFileName))
+    
+    removables = get_drives_list()
+    for drive in removables:
+        label = GetVolumeInformation(drive)[0]
+        print('processing drive "{}" with label "{}"'.format(drive, label))
+        SrcPathBase = drive + '\\' + DVR_DIR
+        if not path.exists(SrcPathBase):
+            print('Directory "{}" not exists. skip'.format(DVR_DIR))
             continue
-        print('add task "{}" -> "{}"'.format(SrcFilename, DstFileName))
-        add_task(SrcFilename, DstFileName)
-        while get_tasks_count() >= MAX_TASKS:
-            sleep(0.5)
+        if not label:
+            print('Drive "{}" has no label. skip'.format(drive))
+            continue
+        # destination patch base part    
+        DstPathBase = DST_PATH
+        if not path.exists(DstPathBase):
+            raise Exception('Target directory "{}" not exists'.format(DstPathBase))
+            
+        # make a date-like directory
+        DstPathBase = path.join(DstPathBase, date.today().strftime('%Y%m%d'))
+        if not path.exists(DstPathBase):
+            mkdir(DstPathBase)
+        # make a label-named directory
+        DstPathBase = path.join(DstPathBase, label)
+        if not path.exists(DstPathBase):
+            mkdir(DstPathBase)
+        # processing files
+        for SrcFilename in glob.glob(path.join(SrcPathBase ,"*." + FILE_EXTENTION)):
+            DstFileName = path.join(DstPathBase, path.basename(SrcFilename) + ".avi")
+            if path.exists(DstFileName):
+                print('file "{}" already exists. skip'.format(DstFileName))
+                continue
+            print('add task "{}" -> "{}"'.format(SrcFilename, DstFileName))
+            add_task(SrcFilename, DstFileName)
+            while get_tasks_count() >= MAX_TASKS:
+                sleep(0.5)
 

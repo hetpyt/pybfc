@@ -5,8 +5,8 @@ import sys
 import win32con
 from win32api import GetLogicalDriveStrings, GetVolumeInformation
 from win32file import GetDriveType
+from os import path
 
-#define TEST='removable drives'
 
 def get_drives_list(drive_types=(win32con.DRIVE_REMOVABLE,)):
     drives_str = GetLogicalDriveStrings()
@@ -15,7 +15,9 @@ def get_drives_list(drive_types=(win32con.DRIVE_REMOVABLE,)):
 
 if __name__ == "__main__":
     drives = get_drives_list(drive_types = (win32con.DRIVE_REMOVABLE,))
-    print(TEST)
     for drive in drives:
         info = GetVolumeInformation(drive)
         print('{} {}'.format(drive, info[0]))
+        if path.exists(path.join(drive, 'RecordFile')):
+            print('Dir exists')
+            
