@@ -12,7 +12,7 @@ from os import path
 SRC_DIR = "G:\\RecordFile"
 DST_DIR = "F:\\RecordFile\\test"
 MAX_TASKS = 3
-##
+#
 
 WIN_VERSION = platform.win32_ver()[0]
 
@@ -160,13 +160,15 @@ def get_tasks_count():
     Count = win32gui.SendMessage(hList, LVM_GETITEMCOUNT, 0, 0);
     return Count
 
-for SrcFilename in glob.glob(path.join(SRC_DIR ,"*." + FILE_EXTENTION)):
-    DstFileName = path.join(DST_DIR, path.basename(SrcFilename) + ".avi")
-    if path.exists(DstFileName):
-        print('file "{}" already exists'.format(DstFileName))
-        continue
-    print('add task "{}" -> "{}"'.format(SrcFilename, DstFileName))
-    add_task(SrcFilename, DstFileName)
-    while get_tasks_count() >= MAX_TASKS:
-        sleep(0.5)
+if __name__ == "__main__":
+
+    for SrcFilename in glob.glob(path.join(SRC_DIR ,"*." + FILE_EXTENTION)):
+        DstFileName = path.join(DST_DIR, path.basename(SrcFilename) + ".avi")
+        if path.exists(DstFileName):
+            print('file "{}" already exists'.format(DstFileName))
+            continue
+        print('add task "{}" -> "{}"'.format(SrcFilename, DstFileName))
+        add_task(SrcFilename, DstFileName)
+        while get_tasks_count() >= MAX_TASKS:
+            sleep(0.5)
 
